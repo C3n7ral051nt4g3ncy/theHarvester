@@ -21,10 +21,7 @@ async def splitter(links):
         if len(tail) == 2 or tail == "zh-cn":
             tail = url.split("/")[-2]
         name = tail.split("-")
-        if len(name) > 1:
-            joined_name = name[0] + name[1]
-        else:
-            joined_name = name[0]
+        joined_name = name[0] + name[1] if len(name) > 1 else name[0]
         if joined_name not in name_check:
             unique_list.append(url)
             name_check.append(joined_name)
@@ -60,12 +57,13 @@ async def search(text: str) -> bool:
     :param text: See if certain text is returned which means Google is blocking us
     :return bool:
     """
-    for line in text.strip().splitlines():
-        if 'This page appears when Google automatically detects requests coming from your computer network' in line \
-                or 'http://www.google.com/sorry/index' in line or 'https://www.google.com/sorry/index' in line:
-            # print('\tGoogle is blocking your IP due to too many automated requests, wait or change your IP')
-            return True
-    return False
+    return any(
+        'This page appears when Google automatically detects requests coming from your computer network'
+        in line
+        or 'http://www.google.com/sorry/index' in line
+        or 'https://www.google.com/sorry/index' in line
+        for line in text.strip().splitlines()
+    )
 
 
 async def google_workaround(visit_url: str) -> Union[bool, str]:

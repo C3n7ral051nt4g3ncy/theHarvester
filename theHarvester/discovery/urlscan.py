@@ -5,10 +5,10 @@ from theHarvester.lib.core import *
 class SearchUrlscan:
     def __init__(self, word):
         self.word = word
-        self.totalhosts = list()
-        self.totalips = list()
-        self.interestingurls = list()
-        self.totalasns = list()
+        self.totalhosts = []
+        self.totalips = []
+        self.interestingurls = []
+        self.totalasns = []
         self.proxy = False
 
     async def do_search(self):

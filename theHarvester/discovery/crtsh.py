@@ -15,17 +15,25 @@ class SearchCrtsh:
             url = f'https://crt.sh/?q=%25.{self.word}&output=json'
             response = await AsyncFetcher.fetch_all([url], json=True, proxy=self.proxy)
             response = response[0]
-            data = set(
-                [dct['name_value'][2:] if '*.' == dct['name_value'][:2] else dct['name_value']
-                 for dct in response])
-            data = {domain for domain in data if (domain[0] != '*' and str(domain[0:4]).isnumeric() is False)}
+            data = {
+                dct['name_value'][2:]
+                if dct['name_value'][:2] == '*.'
+                else dct['name_value']
+                for dct in response
+            }
+
+            data = {
+                domain
+                for domain in data
+                if domain[0] != '*' and not str(domain[:4]).isnumeric()
+            }
+
         except Exception as e:
             print(e)
         clean = []
         for x in data:
             pre = x.split()
-            for y in pre:
-                clean.append(y)
+            clean.extend(iter(pre))
         return clean
 
     async def process(self, proxy=False) -> None:

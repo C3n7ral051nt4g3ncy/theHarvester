@@ -30,10 +30,9 @@ except RuntimeError:
 async def root(*, user_agent: str = Header(None)):
     # very basic user agent filtering
     if user_agent and ('gobuster' in user_agent or 'sqlmap' in user_agent or 'rustbuster' in user_agent):
-        response = RedirectResponse(app.url_path_for('bot'))
-        return response
+        return RedirectResponse(app.url_path_for('bot'))
 
-    html = """
+    return """
     <!DOCTYPE html>
     <html lang="en-US">
         <head>
@@ -55,14 +54,11 @@ async def root(*, user_agent: str = Header(None)):
         </body>
     </html>
     """
-    return html
 
 
 @app.get('/nicebot')
 async def bot():
-    # nice bot
-    string = {'bot': 'These are not the droids you are looking for'}
-    return string
+    return {'bot': 'These are not the droids you are looking for'}
 
 
 @app.get('/sources', response_class=UJSONResponse)
@@ -82,8 +78,7 @@ async def dnsbrute(request: Request, user_agent: str = Header(None),
     # Rate limit of 5 requests per minute
     # basic user agent filtering
     if user_agent and ('gobuster' in user_agent or 'sqlmap' in user_agent or 'rustbuster' in user_agent):
-        response = RedirectResponse(app.url_path_for('bot'))
-        return response
+        return RedirectResponse(app.url_path_for('bot'))
     dns_bruteforce = await __main__.start(argparse.Namespace(dns_brute=True,
                                                              dns_lookup=False,
                                                              dns_server=False,
@@ -118,8 +113,7 @@ async def query(request: Request, dns_server: str = Query(""), user_agent: str =
     # Rate limit of 2 requests per minute
     # basic user agent filtering
     if user_agent and ('gobuster' in user_agent or 'sqlmap' in user_agent or 'rustbuster' in user_agent):
-        response = RedirectResponse(app.url_path_for('bot'))
-        return response
+        return RedirectResponse(app.url_path_for('bot'))
     try:
         asns, iurls, twitter_people_list, \
             linkedin_people_list, linkedin_links, \

@@ -17,7 +17,8 @@ class SearchLinkedin:
         self.proxy = False
 
     async def do_search(self):
-        urly = 'http://' + self.server + '/search?num=100&start=' + str(self.counter) + '&hl=en&meta=&q=site%3Alinkedin.com/in%20' + self.word
+        urly = f'http://{self.server}/search?num=100&start={str(self.counter)}&hl=en&meta=&q=site%3Alinkedin.com/in%20{self.word}'
+
         try:
             headers = {'User-Agent': Core.get_user_agent()}
             resp = await AsyncFetcher.fetch_all([urly], headers=headers, proxy=self.proxy)

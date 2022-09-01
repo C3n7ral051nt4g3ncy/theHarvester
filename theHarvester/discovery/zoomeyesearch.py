@@ -19,11 +19,11 @@ class SearchZoomEye:
             raise MissingKey('zoomeye')
         self.baseurl = 'https://api.zoomeye.org/host/search'
         self.proxy = False
-        self.totalasns = list()
-        self.totalhosts = list()
-        self.interestingurls = list()
-        self.totalips = list()
-        self.totalemails = list()
+        self.totalasns = []
+        self.totalhosts = []
+        self.interestingurls = []
+        self.totalips = []
+        self.totalemails = []
         # Regex used is directly from: https://github.com/GerbenJavado/LinkFinder/blob/master/linkfinder.py#L29
         # Maybe one day it will be a pip package
         # Regardless LinkFinder is an amazing tool!
@@ -65,8 +65,13 @@ class SearchZoomEye:
 
         subdomain_search_endpoint = f'https://api.zoomeye.org/domain/search?q={self.word}&type=0&'
 
-        response = await AsyncFetcher.fetch_all([subdomain_search_endpoint + 'page=1'],
-                                                json=True, proxy=self.proxy, headers=headers)
+        response = await AsyncFetcher.fetch_all(
+            [f'{subdomain_search_endpoint}page=1'],
+            json=True,
+            proxy=self.proxy,
+            headers=headers,
+        )
+
         # Make initial request to determine total number of subdomains
         resp = response[0]
         if resp['status'] != 200:
@@ -79,13 +84,18 @@ class SearchZoomEye:
         self.limit = self.limit if total > self.limit else (total // 30) + 1
         self.totalhosts.extend([item["name"] for item in resp["list"]])
         for i in range(2, self.limit):
-            response = await AsyncFetcher.fetch_all([subdomain_search_endpoint + f'page={i}'],
-                                                    json=True, proxy=self.proxy, headers=headers)
+            response = await AsyncFetcher.fetch_all(
+                [f'{subdomain_search_endpoint}page={i}'],
+                json=True,
+                proxy=self.proxy,
+                headers=headers,
+            )
+
             resp = response[0]
             if resp['status'] != 200:
                 return
             found_subdomains = [item["name"] for item in resp["list"]]
-            if len(found_subdomains) == 0:
+            if not found_subdomains:
                 break
             self.totalhosts.extend(found_subdomains)
             if i % 10 == 0:
@@ -107,32 +117,22 @@ class SearchZoomEye:
         # First request determines how many pages there in total
         resp = response[0]
         total_pages = int(resp['available'])
-        self.limit = self.limit if total_pages > self.limit else total_pages
+        self.limit = min(total_pages, self.limit)
         self.limit = 3 if self.limit == 2 else self.limit
         cur_page = 2 if self.limit >= 2 else -1
-        # Means there is only one page
-        # hostnames, emails, ips, asns, iurls
-        nomatches_counter = 0
+        # No need to do loop just parse and leave
+        if 'matches' in resp.keys():
+            hostnames, emails, ips, asns, iurls = await self.parse_matches(resp['matches'])
+            self.totalhosts.extend(hostnames)
+            self.totalemails.extend(emails)
+            self.totalips.extend(ips)
+            self.totalasns.extend(asns)
+            self.interestingurls.extend(iurls)
         # cur_page = -1
-        if cur_page == -1:
-            # No need to do loop just parse and leave
-            if 'matches' in resp.keys():
-                hostnames, emails, ips, asns, iurls = await self.parse_matches(resp['matches'])
-                self.totalhosts.extend(hostnames)
-                self.totalemails.extend(emails)
-                self.totalips.extend(ips)
-                self.totalasns.extend(asns)
-                self.interestingurls.extend(iurls)
-        else:
-            if 'matches' in resp.keys():
-                # Parse out initial results and then continue to loop
-                hostnames, emails, ips, asns, iurls = await self.parse_matches(resp['matches'])
-                self.totalhosts.extend(hostnames)
-                self.totalemails.extend(emails)
-                self.totalips.extend(ips)
-                self.totalasns.extend(asns)
-                self.interestingurls.extend(iurls)
-
+        if cur_page != -1:
+            # Means there is only one page
+            # hostnames, emails, ips, asns, iurls
+            nomatches_counter = 0
             for num in range(2, self.limit):
                 # print(f'Currently on page: {num}')
                 params = (
@@ -150,7 +150,7 @@ class SearchZoomEye:
                 hostnames, emails, ips, asns, iurls = await self.parse_matches(resp['matches'])
 
                 if len(hostnames) == 0 and len(emails) == 0 and len(ips) == 0 \
-                        and len(asns) == 0 and len(iurls) == 0:
+                            and len(asns) == 0 and len(iurls) == 0:
                     nomatches_counter += 1
 
                 if nomatches_counter >= 5:
@@ -188,12 +188,8 @@ class SearchZoomEye:
                         rdns_new = parts[0]
                         if len(parts) == 2:
                             hostnames.add(parts[1])
-                        rdns_new = rdns_new[:-1] if rdns_new[-1] == '.' else rdns_new
-                        hostnames.add(rdns_new)
-                    else:
-                        rdns_new = rdns_new[:-1] if rdns_new[-1] == '.' else rdns_new
-                        hostnames.add(rdns_new)
-
+                    rdns_new = rdns_new[:-1] if rdns_new[-1] == '.' else rdns_new
+                    hostnames.add(rdns_new)
                 if 'rdns' in match.keys():
                     rdns = match['rdns']
                     rdns = rdns[:-1] if rdns[-1] == '.' else rdns

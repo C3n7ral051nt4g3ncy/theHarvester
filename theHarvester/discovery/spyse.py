@@ -53,7 +53,7 @@ class SearchSpyse:
                 offset = 0
 
                 while True:
-                    limit = max_limit if self.limit - fetch_count > max_limit else self.limit - fetch_count
+                    limit = min(self.limit - fetch_count, max_limit)
                     if limit <= 0:
                         break
 

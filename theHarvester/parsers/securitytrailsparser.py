@@ -13,8 +13,8 @@ class Parser:
         sub_domain_flag = 0
         self.text = str(self.text).splitlines()
         # Split lines to get a list of lines.
-        for index in range(0, len(self.text)):
-            line = self.text[index].strip()
+        for item in self.text:
+            line = item.strip()
             if '"ip":' in line:
                 # Extract IP.
                 ip = ''
@@ -27,7 +27,6 @@ class Parser:
             elif '"subdomains":' in line:
                 # subdomains start here so set flag to 1
                 sub_domain_flag = 1
-                continue
             elif sub_domain_flag > 0:
                 if ']' in line:
                     sub_domain_flag = 0

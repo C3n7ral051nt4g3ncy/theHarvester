@@ -9,7 +9,7 @@ class SearchBinaryEdge:
         self.totalhosts = set()
         self.proxy = False
         self.key = Core.binaryedge_key()
-        self.limit = 501 if limit >= 501 else limit
+        self.limit = min(limit, 501)
         self.limit = 2 if self.limit == 1 else self.limit
         if self.key is None:
             raise MissingKey('binaryedge')
@@ -23,13 +23,13 @@ class SearchBinaryEdge:
             responses = response[0]
             dct = responses
             if ('status' in dct.keys() and 'message' in dct.keys()) and \
-                    (dct['status'] == 400 or 'Bad Parameter' in dct['message'] or 'Error' in dct['message']):
+                        (dct['status'] == 400 or 'Bad Parameter' in dct['message'] or 'Error' in dct['message']):
                 # 400 status code means no more results
                 break
             if 'events' in dct.keys():
                 if len(dct['events']) == 0:
                     break
-                self.totalhosts.update({host for host in dct['events']})
+                self.totalhosts.update(set(dct['events']))
             await asyncio.sleep(get_delay())
 
     async def get_hostnames(self) -> set:

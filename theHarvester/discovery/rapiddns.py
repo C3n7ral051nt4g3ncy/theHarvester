@@ -19,8 +19,7 @@ class SearchRapidDns:
             if len(responses[0]) <= 1:
                 return self.total_results
             soup = BeautifulSoup(responses[0], 'html.parser')
-            rows = soup.find("table").find("tbody").find_all("tr")
-            if rows:
+            if rows := soup.find("table").find("tbody").find_all("tr"):
                 # Sanity check
                 for row in rows:
                     cells = row.find_all("td")
@@ -31,7 +30,7 @@ class SearchRapidDns:
                             self.total_results.append(f'{subdomain}')
                         else:
                             self.total_results.append(f'{subdomain}:{str(cells[1].get_text()).strip()}')
-                self.total_results = list({domain for domain in self.total_results})
+                self.total_results = list(set(self.total_results))
         except Exception as e:
             print(f'An exception has occurred: {str(e)}')
 

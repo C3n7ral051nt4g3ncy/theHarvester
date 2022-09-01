@@ -41,13 +41,13 @@ class Checker:
     async def check(self):
         loop = asyncio.get_event_loop()
         resolver = aiodns.DNSResolver(loop=loop, timeout=4) if len(self.nameserver) == 0\
-            else aiodns.DNSResolver(loop=loop, timeout=4, nameservers=self.nameserver)
+                else aiodns.DNSResolver(loop=loop, timeout=4, nameservers=self.nameserver)
         results = await self.query_all(resolver)
         for host, address in results:
             self.realhosts.append(host)
-            self.addresses.update({addr for addr in address})
-            # address may be a list of ips
-            # and do a set comprehension to remove duplicates
+            self.addresses.update(set(address))
+                # address may be a list of ips
+                # and do a set comprehension to remove duplicates
         self.realhosts.sort()
         self.addresses = list(self.addresses)
         return self.realhosts, self.addresses

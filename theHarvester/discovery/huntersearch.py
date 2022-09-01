@@ -7,7 +7,7 @@ class SearchHunter:
     def __init__(self, word, limit, start):
         self.word = word
         self.limit = limit
-        self.limit = 10 if limit > 10 else limit
+        self.limit = min(limit, 10)
         self.start = start
         self.key = Core.hunter_key()
         if self.key is None:
@@ -26,7 +26,7 @@ class SearchHunter:
         acc_info_url = f'https://api.hunter.io/v2/account?api_key={self.key}'
         response = await AsyncFetcher.fetch_all([acc_info_url], headers=headers, json=True)
         is_free = is_free if 'plan_name' in response[0]['data'].keys() and response[0]['data']['plan_name'].lower() \
-                             == 'free' else False
+                                 == 'free' else False
         # Extract total number of requests that are available for account
 
         total_requests_avail = response[0]['data']['requests']['searches']['available'] - response[0]['data']['requests']['searches']['used']

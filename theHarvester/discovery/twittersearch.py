@@ -44,9 +44,8 @@ class SearchTwitter:
         # fix invalid handles that look like @user other_output
         handles = set()
         for handle in to_parse:
-            result = re.search(r'^@?(\w){1,15}', handle)
-            if result:
-                handles.add(result.group(0))
+            if result := re.search(r'^@?(\w){1,15}', handle):
+                handles.add(result[0])
         return handles
 
     async def process(self, proxy=False):

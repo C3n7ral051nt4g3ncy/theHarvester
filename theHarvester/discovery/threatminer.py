@@ -13,7 +13,7 @@ class SearchThreatminer:
     async def do_search(self):
         url = f'https://api.threatminer.org/v2/domain.php?q={self.word}&rt=5'
         response = await AsyncFetcher.fetch_all([url], json=True, proxy=self.proxy)
-        self.totalhosts: set = {host for host in response[0]['results']}
+        self.totalhosts: set = set(response[0]['results'])
         second_url = f'https://api.threatminer.org/v2/domain.php?q={self.word}&rt=2'
         secondresp = await AsyncFetcher.fetch_all([second_url], json=True, proxy=self.proxy)
         try:

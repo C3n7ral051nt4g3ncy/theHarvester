@@ -18,18 +18,17 @@ class ScreenShotter:
     def __init__(self, output):
         self.output = output
         self.slash = "\\" if 'win' in sys.platform else '/'
-        self.slash = "" if (self.output[-1] == "\\" or self.output[-1] == "/") else self.slash
+        self.slash = "" if self.output[-1] in ["\\", "/"] else self.slash
 
     def verify_path(self):
         try:
             if not os.path.isdir(self.output):
                 answer = input(
                     '[+] The output path you have entered does not exist would you like to create it (y/n): ')
-                if answer.lower() == 'yes' or answer.lower() == 'y':
-                    os.mkdir(self.output)
-                    return True
-                else:
+                if answer.lower() not in ['yes', 'y']:
                     return False
+                os.mkdir(self.output)
+                return True
             return True
         except Exception as e:
             print(f"An exception has occurred while attempting to verify output path's existence: {e}")
@@ -54,21 +53,21 @@ class ScreenShotter:
             timeout = aiohttp.ClientTimeout(total=35)
             headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                                      'Chrome/83.0.4103.106 Safari/537.36'}
-            url = f'http://{url}' if not url.startswith('http') else url
+            url = url if url.startswith('http') else f'http://{url}'
             url = url.replace('www.', '')
             sslcontext = ssl.create_default_context(cafile=certifi.where())
             async with aiohttp.ClientSession(timeout=timeout, headers=headers,
-                                             connector=aiohttp.TCPConnector(ssl=sslcontext)) as session:
+                                                     connector=aiohttp.TCPConnector(ssl=sslcontext)) as session:
                 async with session.get(url, verify_ssl=False) as resp:
                     # TODO fix with origin url, should be there somewhere
                     text = await resp.text("UTF-8")
-                    return f'http://{url}' if not url.startswith('http') else url, text
+                    return url if url.startswith('http') else f'http://{url}', text
         except Exception as e:
             print(f'An exception has occurred while attempting to visit {url} : {e}')
             return "", ""
 
     async def take_screenshot(self, url):
-        url = f'http://{url}' if not url.startswith('http') else url
+        url = url if url.startswith('http') else f'http://{url}'
         url = url.replace('www.', '')
         print(f'Attempting to take a screenshot of: {url}')
         browser = await launch(headless=True, ignoreHTTPSErrors=True, args=["--no-sandbox"])

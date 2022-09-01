@@ -12,7 +12,7 @@ class SearchOmnisint:
         base_url = f'https://sonar.omnisint.io/all/{self.word}?page=1'
         responses = await AsyncFetcher.fetch_all([base_url], json=True, headers={'User-Agent': Core.get_user_agent()},
                                                  proxy=self.proxy)
-        self.totalhosts = list({host for host in responses[0]})
+        self.totalhosts = list(set(responses[0]))
 
     async def get_hostnames(self) -> set:
         return self.totalhosts
