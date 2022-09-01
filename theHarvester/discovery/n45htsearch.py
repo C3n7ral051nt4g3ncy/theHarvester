@@ -13,7 +13,7 @@ class SearchN45ht:
         response = await AsyncFetcher.fetch_all([url], json=True, proxy=self.proxy)
         responses = response[0]
         dct = responses
-        self.totalhosts: set = {host for host in dct['subdomains']}
+        self.totalhosts: set = set(dct['subdomains'])
 
     async def get_hostnames(self) -> set:
         return self.totalhosts

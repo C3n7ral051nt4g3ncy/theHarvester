@@ -53,7 +53,7 @@ class SearchQwant:
                 response_items = json_response['data']['result']['items']
             except KeyError:
                 if json_response.get("status", None) \
-                        and json_response.get("error", None) == 24:
+                            and json_response.get("error", None) == 24:
                     # https://www.qwant.com/anti_robot
                     print("Rate limit reached - IP Blocked until captcha is solved")
                     break

@@ -74,10 +74,7 @@ class SearchBing:
             if self.bingApi is None:
                 raise MissingKey('BingAPI')
         else:
-            if api == 'yes':
-                await self.do_search_api()
-            else:
-                await self.do_search()
+            await self.do_search()
             print(f'\tSearching {self.counter} results.')
 
     async def process_vhost(self):

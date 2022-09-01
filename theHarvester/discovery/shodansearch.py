@@ -20,32 +20,31 @@ class SearchShodan:
             ipaddress = ip
             results = self.api.host(ipaddress)
             asn = ''
-            domains = list()
-            hostnames = list()
+            domains = []
+            hostnames = []
             ip_str = ''
             isp = ''
             org = ''
-            ports = list()
+            ports = []
             title = ''
             server = ''
             product = ''
-            technologies = list()
+            technologies = []
 
             data_first_dict = dict(results['data'][0])
 
-            if 'ip_str' in data_first_dict.keys():
+            if 'ip_str' in data_first_dict:
                 ip_str += data_first_dict['ip_str']
 
-            if 'http' in data_first_dict.keys():
+            if 'http' in data_first_dict:
                 http_results_dict = dict(data_first_dict['http'])
-                if 'title' in http_results_dict.keys():
+                if 'title' in http_results_dict:
                     title_val = str(http_results_dict['title']).strip()
                     if title_val != 'None':
                         title += title_val
-                if 'components' in http_results_dict.keys():
-                    for key in http_results_dict['components'].keys():
-                        technologies.append(key)
-                if 'server' in http_results_dict.keys():
+                if 'components' in http_results_dict:
+                    technologies.extend(iter(http_results_dict['components'].keys()))
+                if 'server' in http_results_dict:
                     server_val = str(http_results_dict['server']).strip()
                     if server_val != 'None':
                         server += server_val
@@ -53,9 +52,8 @@ class SearchShodan:
             for key, value in results.items():
                 if key == 'asn':
                     asn += value
-                if key == 'domains':
-                    value = list(value)
-                    value.sort()
+                elif key == 'domains':
+                    value = sorted(value)
                     domains.extend(value)
                 if key == 'hostnames':
                     value = [host.strip() for host in list(value)]
@@ -63,11 +61,10 @@ class SearchShodan:
                     hostnames.extend(value)
                 if key == 'isp':
                     isp += value
-                if key == 'org':
+                elif key == 'org':
                     org += str(value)
                 if key == 'ports':
-                    value = list(value)
-                    value.sort()
+                    value = sorted(value)
                     ports.extend(value)
                 if key == 'product':
                     product += value

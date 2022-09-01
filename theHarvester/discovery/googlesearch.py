@@ -20,8 +20,14 @@ class SearchGoogle:
 
     async def do_search(self):
         # Do normal scraping.
-        urly = 'http://' + self.server + '/search?num=' + self.quantity + '&start=' + str(
-            self.counter) + '&hl=en&meta=&q=%40\"' + self.word + '\"'
+        urly = (
+            (
+                f'http://{self.server}/search?num={self.quantity}&start={str(self.counter)}'
+                + '&hl=en&meta=&q=%40\"'
+            )
+            + self.word
+        ) + '\"'
+
         try:
             headers = {'User-Agent': googleUA}
             resp = await AsyncFetcher.fetch_all([urly], headers=headers, proxy=self.proxy)
@@ -43,8 +49,14 @@ class SearchGoogle:
         self.totalresults += self.results
 
     async def do_search_profiles(self):
-        urly = 'http://' + self.server + '/search?num=' + self.quantity + '&start=' + str(
-            self.counter) + '&hl=en&meta=&q=site:www.google.com%20intitle:\"Google%20Profile\"%20\"Companies%20I%27ve%20worked%20for\"%20\"at%20' + self.word + '\"'
+        urly = (
+            (
+                f'http://{self.server}/search?num={self.quantity}&start={str(self.counter)}'
+                + '&hl=en&meta=&q=site:www.google.com%20intitle:\"Google%20Profile\"%20\"Companies%20I%27ve%20worked%20for\"%20\"at%20'
+            )
+            + self.word
+        ) + '\"'
+
         try:
             headers = {'User-Agent': googleUA}
             resp = await AsyncFetcher.fetch_all([urly], headers=headers, proxy=self.proxy)

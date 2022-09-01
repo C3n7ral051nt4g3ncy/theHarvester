@@ -26,7 +26,7 @@ class SearchRocketReach:
             }
 
             next_page = 1  # track pagniation
-            for count in range(1, self.limit):
+            for _ in range(1, self.limit):
                 data = f'{{"query":{{"company_domain": ["{self.word}"]}}, "start": {next_page}, "page_size": 100}}'
                 result = await AsyncFetcher.post_fetch(self.baseurl, headers=headers, data=data, json=True)
                 if 'detail' in result.keys() and 'error' in result.keys() and 'Subscribe to a plan to access' in result['detail']:
@@ -37,13 +37,13 @@ class SearchRocketReach:
                     print(f'RocketReach requests have been throttled; '
                           f'{result["detail"].split(" ", 3)[-1].replace("available", "availability")}')
                     break
-                if 'profiles' in dict(result).keys():
+                if 'profiles' in dict(result):
                     if len(result['profiles']) == 0:
                         break
                     for profile in result['profiles']:
-                        if 'linkedin_url' in dict(profile).keys():
+                        if 'linkedin_url' in dict(profile):
                             self.links.add(profile['linkedin_url'])
-                if 'pagination' in dict(result).keys():
+                if 'pagination' in dict(result):
                     next_page = int(result['pagination']['next'])
                     if next_page > int(result['pagination']['total']):
                         break

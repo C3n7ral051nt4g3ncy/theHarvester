@@ -86,13 +86,13 @@ class TestSearchGithubCode:
     async def test_next_page(self):
         Core.github_key = MagicMock(return_value="lol")
         test_class_instance = githubcode.SearchGithubCode(word="test", limit=500)
-        test_result = githubcode.SuccessResult(list(), next_page=2, last_page=4)
+        test_result = githubcode.SuccessResult([], next_page=2, last_page=4)
         assert(2 == await test_class_instance.next_page_or_end(test_result))
 
     async def test_last_page(self):
         Core.github_key = MagicMock(return_value="lol")
         test_class_instance = githubcode.SearchGithubCode(word="test", limit=500)
-        test_result = githubcode.SuccessResult(list(), None, None)
+        test_result = githubcode.SuccessResult([], None, None)
         assert(None is await test_class_instance.next_page_or_end(test_result))
 
     if __name__ == '__main__':

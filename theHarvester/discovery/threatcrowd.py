@@ -6,8 +6,8 @@ class SearchThreatcrowd:
 
     def __init__(self, word):
         self.word = word.replace(' ', '%20')
-        self.hostnames = list()
-        self.ips = list()
+        self.hostnames = []
+        self.ips = []
         self.proxy = False
 
     async def do_search(self):

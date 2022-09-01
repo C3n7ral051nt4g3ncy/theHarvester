@@ -60,10 +60,9 @@ class DnsForce:
 IP_REGEX = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
 PORT_REGEX = r'\d{1,5}'
 NETMASK_REGEX = r'\d{1,2}|' + IP_REGEX
-NETWORK_REGEX = r'\b({})(?:\:({}))?(?:\/({}))?\b'.format(
-    IP_REGEX,
-    PORT_REGEX,
-    NETMASK_REGEX)
+NETWORK_REGEX = (
+    f'\b({IP_REGEX})(?:\:({PORT_REGEX}))?(?:\/({NETMASK_REGEX}))?\b'
+)
 
 
 def serialize_ip_range(
@@ -88,12 +87,13 @@ def serialize_ip_range(
     """
     __ip_matches = re.search(NETWORK_REGEX, ip, re.IGNORECASE)
     if __ip_matches and __ip_matches.groups():
-        __ip = __ip_matches.group(1)
-        __netmask = netmask if netmask else __ip_matches.group(3)
-        if __ip and __netmask:
-            return str(IPv4Network('{}/{}'.format(__ip, __netmask), strict=False))
-        elif __ip:
-            return str(IPv4Network('{}/{}'.format(__ip, '24'), strict=False))
+        __ip = __ip_matches[1]
+        __netmask = netmask or __ip_matches[3]
+        if __ip:
+            if __netmask:
+                return str(IPv4Network(f'{__ip}/{__netmask}', strict=False))
+            else:
+                return str(IPv4Network(f'{__ip}/24', strict=False))
 
     # invalid input ip
     return ''
@@ -186,7 +186,7 @@ def log_query(ip: str) -> None:
     -------
     out: None.
     """
-    sys.stdout.write(chr(27) + '[2K' + chr(27) + '[G')
+    sys.stdout.write(f'{chr(27)}[2K{chr(27)}[G')
     sys.stdout.write('\r' + ip + ' - ')
     sys.stdout.flush()
 

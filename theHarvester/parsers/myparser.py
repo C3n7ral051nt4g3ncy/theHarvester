@@ -28,22 +28,25 @@ class Parser:
         reg_emails = re.compile(r'[a-zA-Z0-9.\-_+#~!$&\',;=:]+' + '@' + '[a-zA-Z0-9.-]*' + self.word.replace('www.', ''))
         self.temp = reg_emails.findall(self.results)
         emails = await self.unique()
-        true_emails = {str(email)[1:].lower().strip() if len(str(email)) > 1 and str(email)[0] == '.'
-                       else len(str(email)) > 1 and str(email).lower().strip() for email in emails}
         # if email starts with dot shift email string and make sure all emails are lowercase
-        return true_emails
+        return {
+            str(email)[1:].lower().strip()
+            if len(str(email)) > 1 and str(email)[0] == '.'
+            else len(str(email)) > 1 and str(email).lower().strip()
+            for email in emails
+        }
 
     async def fileurls(self, file):
-        urls = []
         reg_urls = re.compile('<a href="(.*?)"')
         self.temp = reg_urls.findall(self.results)
         allurls = await self.unique()
-        for iteration in allurls:
-            if iteration.count('webcache') or iteration.count('google.com') or iteration.count('search?hl'):
-                pass
-            else:
-                urls.append(iteration)
-        return urls
+        return [
+            iteration
+            for iteration in allurls
+            if not iteration.count('webcache')
+            and not iteration.count('google.com')
+            and not iteration.count('search?hl')
+        ]
 
     async def hostnames(self):
         await self.genericClean()
@@ -89,7 +92,7 @@ class Parser:
         resul = []
         for regex in self.temp:
             final_url = regex.replace("url=", "")
-            resul.append("https://www.linkedin.com" + final_url)
+            resul.append(f"https://www.linkedin.com{final_url}")
         return resul
 
     async def people_linkedin(self):
@@ -147,8 +150,7 @@ class Parser:
 
     async def urls(self):
         found = re.finditer(r'(http|https)://(www\.)?trello.com/([a-zA-Z0-9\-_\.]+/?)*', self.results)
-        urls = {match.group().strip() for match in found}
-        return urls
+        return {match.group().strip() for match in found}
 
     async def unique(self) -> list:
         return list(set(self.temp))

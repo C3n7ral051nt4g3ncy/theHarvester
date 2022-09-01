@@ -42,24 +42,20 @@ class SearchGithubCode:
 
     @staticmethod
     async def fragments_from_response(json_data: dict) -> List[str]:
-        items: List[Dict[str, Any]] = json_data.get('items') or list()
-        fragments: List[str] = list()
+        items: List[Dict[str, Any]] = json_data.get('items') or []
+        fragments: List[str] = []
         for item in items:
-            matches = item.get("text_matches") or list()
-            for match in matches:
-                fragments.append(match.get("fragment"))
-
+            matches = item.get("text_matches") or []
+            fragments.extend(match.get("fragment") for match in matches)
         return [fragment for fragment in fragments if fragment is not None]
 
     @staticmethod
     async def page_from_response(page: str, links) -> Optional[Any]:
-        page_link = links.get(page)
-        if page_link:
+        if page_link := links.get(page):
             parsed = urlparse.urlparse(str(page_link.get("url")))
             params = urlparse.parse_qs(parsed.query)
             pages: List[Any] = params.get('page', [None])
-            page_number = pages[0] and int(pages[0])
-            return page_number
+            return pages[0] and int(pages[0])
         else:
             return None
 
@@ -70,7 +66,7 @@ class SearchGithubCode:
             next_page = await self.page_from_response("next", links)
             last_page = await self.page_from_response("last", links)
             return SuccessResult(results, next_page, last_page)
-        elif status == 429 or status == 403:
+        elif status in [429, 403]:
             return RetryResult(60)
         else:
             try:
@@ -100,10 +96,7 @@ class SearchGithubCode:
 
     @staticmethod
     async def next_page_or_end(result: SuccessResult) -> Optional[int]:
-        if result.next_page is not None:
-            return result.next_page
-        else:
-            return result.last_page
+        return result.next_page if result.next_page is not None else result.last_page
 
     async def process(self, proxy=False):
         self.proxy = proxy

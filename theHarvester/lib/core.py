@@ -96,8 +96,11 @@ class Core:
             except FileNotFoundError:
                 with open('proxies.yaml', 'r') as proxy_file:
                     keys = yaml.safe_load(proxy_file)
-        http_list = [f'http://{proxy}' for proxy in keys['http']] if keys['http'] is not None else []
-        return http_list
+        return (
+            [f'http://{proxy}' for proxy in keys['http']]
+            if keys['http'] is not None
+            else []
+        )
 
     @staticmethod
     def banner() -> None:
@@ -118,46 +121,46 @@ class Core:
 
     @staticmethod
     def get_supportedengines() -> Set[Union[str, Any]]:
-        supportedengines = {'anubis',
-                            'baidu',
-                            'binaryedge',
-                            'bing',
-                            'bingapi',
-                            'bufferoverun',
-                            'censys',
-                            'certspotter',
-                            'crtsh',
-                            'dnsdumpster',
-                            'duckduckgo',
-                            'fullhunt',
-                            'github-code',
-                            'google',
-                            'hackertarget',
-                            'hunter',
-                            'intelx',
-                            'linkedin',
-                            'linkedin_links',
-                            'n45ht',
-                            'omnisint',
-                            'otx',
-                            'pentesttools',
-                            'projectdiscovery',
-                            'qwant',
-                            'rapiddns',
-                            'rocketreach',
-                            'securityTrails',
-                            'sublist3r',
-                            'spyse',
-                            'threatcrowd',
-                            'threatminer',
-                            'trello',
-                            'twitter',
-                            'urlscan',
-                            'virustotal',
-                            'yahoo',
-                            'zoomeye'
-                            }
-        return supportedengines
+        return {
+            'anubis',
+            'baidu',
+            'binaryedge',
+            'bing',
+            'bingapi',
+            'bufferoverun',
+            'censys',
+            'certspotter',
+            'crtsh',
+            'dnsdumpster',
+            'duckduckgo',
+            'fullhunt',
+            'github-code',
+            'google',
+            'hackertarget',
+            'hunter',
+            'intelx',
+            'linkedin',
+            'linkedin_links',
+            'n45ht',
+            'omnisint',
+            'otx',
+            'pentesttools',
+            'projectdiscovery',
+            'qwant',
+            'rapiddns',
+            'rocketreach',
+            'securityTrails',
+            'sublist3r',
+            'spyse',
+            'threatcrowd',
+            'threatminer',
+            'trello',
+            'twitter',
+            'urlscan',
+            'virustotal',
+            'yahoo',
+            'zoomeye',
+        }
 
     @staticmethod
     def get_user_agent() -> str:
@@ -329,33 +332,68 @@ class AsyncFetcher:
             headers = {'User-Agent': Core.get_user_agent()}
         if takeover:
             async with aiohttp.ClientSession(headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as session:
-                if proxy:
-                    tuples = await asyncio.gather(
-                        *[AsyncFetcher.takeover_fetch(session, url, proxy=random.choice(cls().proxy_list)) for url in
-                          urls])
-                    return tuples
-                else:
-                    tuples = await asyncio.gather(*[AsyncFetcher.takeover_fetch(session, url) for url in urls])
-                    return tuples
+                return (
+                    await asyncio.gather(
+                        *[
+                            AsyncFetcher.takeover_fetch(
+                                session, url, proxy=random.choice(cls().proxy_list)
+                            )
+                            for url in urls
+                        ]
+                    )
+                    if proxy
+                    else await asyncio.gather(
+                        *[
+                            AsyncFetcher.takeover_fetch(session, url)
+                            for url in urls
+                        ]
+                    )
+                )
 
         if len(params) == 0:
             async with aiohttp.ClientSession(headers=headers, timeout=timeout) as session:
                 if proxy:
-                    texts = await asyncio.gather(
-                        *[AsyncFetcher.fetch(session, url, json=json, proxy=random.choice(cls().proxy_list)) for url in
-                          urls])
-                    return texts
+                    return await asyncio.gather(
+                        *[
+                            AsyncFetcher.fetch(
+                                session,
+                                url,
+                                json=json,
+                                proxy=random.choice(cls().proxy_list),
+                            )
+                            for url in urls
+                        ]
+                    )
+
                 else:
-                    texts = await asyncio.gather(*[AsyncFetcher.fetch(session, url, json=json) for url in urls])
-                    return texts
+                    return await asyncio.gather(
+                        *[
+                            AsyncFetcher.fetch(session, url, json=json)
+                            for url in urls
+                        ]
+                    )
+
         else:
             # Indicates the request has certain params
             async with aiohttp.ClientSession(headers=headers, timeout=timeout) as session:
-                if proxy:
-                    texts = await asyncio.gather(*[AsyncFetcher.fetch(session, url, params, json,
-                                                                      proxy=random.choice(cls().proxy_list)) for url in
-                                                   urls])
-                    return texts
-                else:
-                    texts = await asyncio.gather(*[AsyncFetcher.fetch(session, url, params, json) for url in urls])
-                    return texts
+                return (
+                    await asyncio.gather(
+                        *[
+                            AsyncFetcher.fetch(
+                                session,
+                                url,
+                                params,
+                                json,
+                                proxy=random.choice(cls().proxy_list),
+                            )
+                            for url in urls
+                        ]
+                    )
+                    if proxy
+                    else await asyncio.gather(
+                        *[
+                            AsyncFetcher.fetch(session, url, params, json)
+                            for url in urls
+                        ]
+                    )
+                )
